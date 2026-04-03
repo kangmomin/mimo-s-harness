@@ -173,6 +173,27 @@ user-invocable: true
 - 테스트 흐름: 생성 → (생성된 ID 캡처) → 수정/삭제 → 검증
 - 기존 데이터의 ID를 테스트에 사용하지 않는다.
 
+**필터/검색 API 테스트 원칙:**
+
+필터 파라미터(예: `gradeIds`, `locationIds`, `publisherIds` 등)를 테스트할 때, 임의의 값을 사용하면 결과가 0건이어도 필터가 작동하는지 깨졌는지 구분할 수 없다. 반드시 아래 절차를 따른다:
+
+1. **유효한 필터 값 사전 조회**: 테스트 전에 DB에서 실제 데이터가 존재하는 ID를 조회한다.
+   ```sql
+   -- 예: grade 필터 테스트 시, 실제 연결된 grade_id 확인
+   SELECT DISTINCT grade_id FROM {table_name} WHERE status != 'removed' LIMIT 5;
+   -- 예: location 필터 테스트 시
+   SELECT DISTINCT location_id FROM {table_name} WHERE status != 'removed' LIMIT 5;
+   ```
+   조회된 ID가 없으면 해당 필터 테스트를 **SKIP**으로 표기하고, "유효 데이터 없음"을 명시한다.
+
+2. **필터 효과 검증 (대조 테스트)**: 필터가 실제로 결과를 좁히는지 확인한다.
+   - **A (기준)**: 필터 없이 전체 조회 → `total_count` 기록
+   - **B (필터 적용)**: 유효한 ID로 필터 조회 → `filtered_count` 기록
+   - **판정**: `filtered_count < total_count`이면 필터 작동 확인. `filtered_count == total_count`이면 필터가 무시되고 있을 가능성 → **[FILTER_INEFFECTIVE]** 표기
+   - **C (존재하지 않는 값)**: DB에 없는 ID(예: 999999)로 필터 → 0건이어야 함. 0건이 아니면 **[FILTER_BROKEN]** 표기
+
+3. **복합 필터**: 여러 필터를 동시 적용할 때도 위 대조 테스트를 수행한다.
+
 **테스트 케이스 구성:**
 
 #### A. Happy Path
