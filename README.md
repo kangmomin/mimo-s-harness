@@ -35,12 +35,13 @@ claude plugin add kangmomin/mimo-s-harness
 | **default-conventions** | `/mimo-s-harness:default-conventions` | 에러 처리, VO 패턴, 트랜잭션 등 개발 가이드라인 |
 | **pagenation** | `/mimo-s-harness:pagenation` | 커서 기반 페이지네이션 구현 컨벤션 |
 
-### 코드 생성
+### 코드 생성 / 문서 동기화
 
 | 스킬 | 호출 | 설명 |
 |------|------|------|
 | **db-gen-committed** | `/mimo-s-harness:db-gen-committed` | Liquibase migration 파일 생성 (committed 상태) |
 | **apidog-schema-gen** | `/mimo-s-harness:apidog-schema-gen` | Apidog OAS에서 flat JSON 스키마 추출 + 코드 교차 검증 |
+| **e2e-apidog-schema-gen** | `/mimo-s-harness:e2e-apidog-schema-gen` | E2E 실측 결과 기반���로 Apidog 응답 케이스 추가 + 스키마 보정 |
 
 ## 일반적인 워크플로우
 
@@ -53,5 +54,7 @@ claude plugin add kangmomin/mimo-s-harness
   ↓
 /mimo-s-harness:e2e-test-loop    # 4. E2E 테스트 + 수정 반복
   ↓
-/mimo-s-harness:commit-pr        # 5. 커밋 + PR
+/mimo-s-harness:e2e-apidog-schema-gen # 5. 실측 기반 Apidog 명세 동기화
+  ↓
+/mimo-s-harness:commit-pr        # 6. 커밋 + PR
 ```
