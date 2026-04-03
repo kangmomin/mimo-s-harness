@@ -144,6 +144,18 @@ user-invocable: true
 - JWT 토큰을 생성한다 (ADMIN role: `role_id=1`, 충분한 exp).
   - JWT_SECRET은 `secret/.env`의 `JWT_SECRET` 값을 사용한다.
   - Claims: `{"member_id":1,"member_old_id":1,"role_id":1,"is_staff":true,"uuid":"e2e-test","company_id":1,"exp":1900000000}`
+  - **JWT_SECRET에 특수문자(`$`, `#`, `?` 등)가 포함된 경우** bash 기반 토큰 생성이 실패할 수 있다. 이 경우 Python 기반 생성을 기본으로 사용한다:
+    ```bash
+    python3 -c "
+    import jwt, os
+    from dotenv import load_dotenv
+    load_dotenv('secret/.env')
+    secret = os.getenv('JWT_SECRET')
+    token = jwt.encode({'member_id':1,'member_old_id':1,'role_id':1,'is_staff':True,'uuid':'e2e-test','company_id':1,'exp':1900000000}, secret, algorithm='HS256')
+    print(token)
+    "
+    ```
+    - `pip install PyJWT python-dotenv`가 필요할 수 있다. 없으면 자동 설치 후 재시도한다.
 - 필요 시 USER 토큰도 생성한다 (`role_id=2`).
 
 #### 테스트 데이터 추적 준비

@@ -32,13 +32,24 @@ user-invocable: true
 
 ## Phase 0: 작업 범위 수집
 
-`/minmo-s-harness:request`를 호출하여 Technical Spec을 생성한다.
+### 분기: 이미 상세 Spec이 제공된 경우
+
+`$ARGUMENTS` 또는 대화 컨텍스트에 다음 조건을 **모두** 충족하는 상세 설명이 이미 포함되어 있으면 `/request` 호출을 **생략**한다:
+- 작업 유형이 명확 (생성/수정/검토/디버깅)
+- 대상 API/기능이 특정됨
+- 핵심 요구사항이 구체적으로 기술됨
+
+이 경우, 제공된 내용을 Technical Spec으로 직접 정리하고 유저 확인을 받는다.
+
+### 기본: /request 호출
+
+위 조건을 충족하지 않으면 `/minmo-s-harness:request`를 호출하여 Technical Spec을 생성한다.
 
 - `$ARGUMENTS`가 있으면 request 스킬에 전달한다.
 - request 스킬이 완료되면 생성된 **Technical Spec** 전문을 보관한다.
 - Spec에서 **작업 유형** (생성/수정/검토/디버깅)을 확인한다.
 
-> Spec을 유저에게 보여주고 확인을 받는다.
+> 어느 경우든 Spec을 유저에게 보여주고 확인을 받는다.
 
 ---
 
