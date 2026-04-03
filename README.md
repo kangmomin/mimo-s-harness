@@ -10,6 +10,12 @@ claude plugin add kangmomin/minmo-s-harness
 
 ## 스킬 목록
 
+### 자동화 파이프라인
+
+| 스킬 | 호출 | 설명 |
+|------|------|------|
+| **start-workflow** | `/minmo-s-harness:start-workflow` | **전체 워크플로우 자동화** — 요청→난이도→Plan 리뷰→구현→품질 루프→문서→PR→성찰 |
+
 ### 워크플로우
 
 | 스킬 | 호출 | 설명 |
@@ -43,18 +49,46 @@ claude plugin add kangmomin/minmo-s-harness
 | **apidog-schema-gen** | `/minmo-s-harness:apidog-schema-gen` | Apidog OAS에서 flat JSON 스키마 추출 + 코드 교차 검증 |
 | **e2e-apidog-schema-gen** | `/minmo-s-harness:e2e-apidog-schema-gen` | E2E 실측 결과 기반���로 Apidog 응답 케이스 추가 + 스키마 보정 |
 
-## 일반적인 워크플로우
+### 에이전트
+
+| 에이전트 | 설명 |
+|---------|------|
+| **scope-reviewer** | Spec 기반 비즈니스 로직/엣지 케이스 검증 (start-workflow에서 자동 호출) |
+
+## 워크플로우
+
+### 전체 자동화 (`/minmo-s-harness:start-workflow`)
 
 ```
-/minmo-s-harness:request          # 1. 작업 정의 (생성/수정/검토/디버깅)
+Phase 0: /request → Technical Spec 생성
+Phase 1: 난이도 산정 (1-10)
+Phase 2: scope-reviewer 에이전트 대기
+Phase 3: Plan → 6관점 리뷰 (3+3 병렬) → [난이도 7+: Codex]
+Phase 4: 구현 → commit
+Phase 5: 품질 루프 (최대 3회)
+  ├─ simplify-loop
+  ├─ convention-check
+  ├─ e2e-test-loop
+  └─ scope-review
+  → 수정 있으면 재시작, 없으면 탈출
+Phase 6: e2e-apidog-schema-gen (API 변경 시만)
+Phase 7: commit-pr → PR
+Phase 8: 성찰 (커밋 로그 분석)
+Phase 9: 최종 보고 + 보완점 스킬 반영
+```
+
+### 수동 실행 (개별 스킬)
+
+```
+/minmo-s-harness:request          # 1. 작업 정의
   ↓ (구현)
-/minmo-s-harness:convention-check # 2. 컨벤션 검사
+/minmo-s-harness:simplify-loop    # 2. 코드 간소화
   ↓
-/minmo-s-harness:simplify-loop    # 3. 코드 간소화
+/minmo-s-harness:convention-check # 3. 컨벤션 검사
   ↓
 /minmo-s-harness:e2e-test-loop    # 4. E2E 테스트 + 수정 반복
   ↓
-/minmo-s-harness:e2e-apidog-schema-gen # 5. 실측 기반 Apidog 명세 동기화
+/minmo-s-harness:e2e-apidog-schema-gen # 5. Apidog 동기화
   ↓
-/minmo-s-harness:commit-pr        # 6. 커밋 + PR
+/minmo-s-harness:commit-pr        # 6. PR
 ```
