@@ -4,8 +4,8 @@ Post-Math 개발 워크플로우를 위한 Claude Code 플러그인.
 
 ## 설치
 
-```bash
-claude plugin add kangmomin/minmo-s-harness
+```
+/plugin marketplace add kangmomin/minmo-s-harness
 ```
 
 ## 초기 세팅
